@@ -36,7 +36,7 @@ class RealizarLllamada:
     Clase para manejar la lógica de la sesión AMI.
     """
     _manager = None
-    _kill_flag = False
+    _kill_flag = False 
 
     def __init__(self):
         self._manager = ami.Manager()

@@ -1,13 +1,7 @@
 import socketserver
 from typing import List
-import subprocess
+from registrar_tecla import guardar_interaccion
 
-import os
-import django
-
-# Ajusta el path según la ubicación de tu proyecto Django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tu_proyecto.settings")
-django.setup()
 
 
 
