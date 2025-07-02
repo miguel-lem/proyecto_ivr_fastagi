@@ -1,0 +1,96 @@
+#en las rutas de saterisk a las cuales se le da acceso como al script de guardar los audios en el servidor asterisk, se le debe asignar permisos sino bloquea el guardar los cambios
+
+#se debe crear las extensiones con las cuales se va a trabajar, en este caso para el desarrollo en local se utiliza el pjsip y el extensions
+#el pjsip.conf es para colocar las extensiones que se van a configura en el softphone
+[general]
+rtpstart=10000
+rtpend=20000
+
+[transporte]
+type=transport
+protocol=udp
+;bind=0.0.0.0
+bind=192.168.2.18
+
+[401]
+type=endpoint
+context=default
+disallow=all
+allow=gsm,ulaw
+aors=401
+auth=401auth
+transport=transporte
+dtmf_mode=rfc4733
+;rtp.ssrc=12345 ;agregados
+;rtp.start=10000
+;rtp.end=20000
+
+[401]
+type=aor
+max_contacts=1
+contact=sip:401@192.168.2.18:5060
+
+[401auth]
+type=auth
+auth_type=userpass
+username=401
+password=pass401
+
+[402]
+type=endpoint
+context=default
+disallow=all
+allow=gsm,ulaw
+aors=402
+auth=402auth
+transport=transporte
+
+[402]
+type=aor
+max_contacts=2
+contact=sip:402@192.168.2.18:5060
+
+[402auth]
+type=auth
+auth_type=userpass
+username=402
+password=pass402
+
+#en el extensions.conf se configura las extensiones que se van a utilizar para las llamadas, aqui es importante el contexto, tambien aqui se agregan las extensiones que se utilizaran para que manejen el fastagi
+
+[default]
+
+exten => 401,1,Dial(PJSIP/401)
+exten => 402,1,Dial(PJSIP/402)
+
+;configuracion de extension que manejara el fastagi para interaccionivr
+exten => _21[0-9],1,Answer()
+ same => n,Wait(1)
+ same => n,AGI(agi://192.168.2.10:4573/09_conAgi)
+ same => n,Hangup()
+
+#para consumirle la api y probr que los audios se pueden escuchar e interactuar se hace mediante cliente rest la utilizacion del siguiente json:
+
+{
+    "channel": "PJSIP/401",
+    "exten": "210", 
+    "context": "default", 
+    "priority": 1, 
+    "callerid": "Mi llamada",
+    "numero_celular":"0981111111"
+}
+
+#el json esta diseñado en base a lo que la api admite como datos de entrada
+#el script fastagi funciona de manera independiente a proyecto django por lo cual es preferible acceder a la ruta por consola y ejecutar el script "python script.py"
+
+
+
+
+
+
+
+
+
+
+
+

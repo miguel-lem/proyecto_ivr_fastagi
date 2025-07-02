@@ -1,0 +1,131 @@
+#Comandos para insertar por query en las tablas los diferentes datos
+#esto se utiliza para probar el funcionamiento de cada parte
+#############################################################################################
+#para tabla mensajes
+INSERT INTO carpeta_llamadas_mensajes (mensaje, tipo_cartera, codigo, created_at)
+VALUES (
+    'Estimado cliente {nombre_cliente}, en representación de {banco}, el ESTUDIO JURIDICO ROMERO D Y ASOCIADOS le recuerda que mantiene su crédito vencido con un saldo de ${monto}, por este motivo, queremos brindarle diferentes opciones de pago. Digite 1 para recibir información de pago de contado, digite 2 para información de un convenio, presiones 3 si desea hablar con un agente, presione 4 si no está disponible este momento',
+    'comprada',
+    'saludo-comprada',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_mensajes (mensaje, tipo_cartera, codigo, created_at)
+VALUES (
+    'Su negociación se ha registrado con éxito, un agente se comunicará con usted para cerrar el proceso, presione 1 si desea que este momento lo pase la llamada con un ejecutivo o puede colgar la llamada',
+    'comprada',
+    'aternt-comprada-ok',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_mensajes (mensaje, tipo_cartera, codigo, created_at)
+VALUES (
+    'Para ofrecerle una asesoría de un acuerdo conveniente para ambas partes, espere en la línea por favor, se está enlazando la llamada con un agente',
+    'comprada',
+    'aternt-comprada-off',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_mensajes (mensaje, tipo_cartera, codigo, created_at)
+VALUES (
+    'Espere en la línea por favor, se está enlazando la llamada',
+    'comprada',
+    'opc-espera',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_mensajes (mensaje, tipo_cartera, codigo, created_at)
+VALUES (
+    'Estudio Jurídico Romero D y Asociados agradece su atención también puede comunicarse al PBX 04-5004000 o al 02-5000160',
+    'comprada',
+    'colg-llamad',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_mensajes (mensaje, tipo_cartera, codigo, created_at)
+VALUES (
+    'Opción incorrecta',
+    'comprada',
+    'opc-error',
+    CURRENT_TIMESTAMP
+);
+
+
+###########################################################################################
+#para tabla cliente
+INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
+VALUES (
+    '0981111111',
+    'Juan Pérez',
+    'comprada',
+    'Banco Pichincha',
+    1535,
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
+VALUES (
+    '0981111112',
+    'Juana Velez',
+    'comprada',
+    'Banco Pichincha',
+    150,
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
+VALUES (
+    '0981111113',
+    'Jubil Andragora',
+    'comprada',
+    'Banco Pacifico',
+    300,
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
+VALUES (
+    '0981111114',
+    'Cartil Marid',
+    'comprada',
+    'Banco Pacifico',
+    790,
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
+VALUES (
+    '0981111115',
+    'Alistar Torbellino',
+    'comprada',
+    'Banco Pacifico',
+    957,
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
+VALUES (
+    '0981111116',
+    'Dersin Plaudi',
+    'comprada',
+    'Banco Pacifico',
+    3229,
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
+VALUES (
+    '0981111117',
+    'Juana la Alpaca',
+    'comprada',
+    'Banco Pacifico',
+    3929,
+    CURRENT_TIMESTAMP
+);
+
+
+##############################################################################################################
+#para tabla promociones
+INSERT INTO carpeta_llamadas_promociones (mensaje, codigo, created_at)
+VALUES (
+    'Nos complace su interés, aproveche nuestra promoción especial con un descuento del 12% para liquidación, presione 1 si está de acuerdo, 2 para recibir alternativas de pago',
+    'Prom-liq-Enero2025',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_promociones (mensaje, codigo, created_at)
+VALUES (
+    'Nos complace su interés, puede realizar un convenio de pago para 6 meses con un anticipo del 12% a su valor de la deuda, presione 1 si está de acuerdo y un ejecutivo se comunicará con Ud. para indicarle el procedimiento, 2 si desea recibir otra alternativa',
+    'Prom-conv-Enero2025',
+    CURRENT_TIMESTAMP
+);
+
+
