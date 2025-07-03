@@ -1,3 +1,13 @@
+#se debe crear un usuario ami dentro de asterisk en manager.conf
+
+[admin] ;nombre que se le dara al usuario
+secret = mi_contrasenia   ; Contraseña para el acceso AMI
+read = all            ; Permisos de solo lectura
+write = all           ; Permisos de escritura
+events=yes ;Asegúrate de que los eventos estén habilitados
+;permit=192.168.0.1:8000
+
+
 #en las rutas de saterisk a las cuales se le da acceso como al script de guardar los audios en el servidor asterisk, se le debe asignar permisos sino bloquea el guardar los cambios
 
 #se debe crear las extensiones con las cuales se va a trabajar, en este caso para el desarrollo en local se utiliza el pjsip y el extensions

@@ -1,8 +1,7 @@
 import socketserver
 from typing import List
-from registrar_tecla import guardar_interaccion
-
-
+import socket
+import json
 
 
 #script fastagi para interaccion con las opciones del menu
@@ -22,6 +21,11 @@ class FastAGIHandler(socketserver.StreamRequestHandler):
 
         #capturo los datos que vienen de lado del ami en el canal de llamada
         audios_str = self.get_variable("AUDIOS")
+        #captura del numero que se va conectar
+        #numero = agi_env.get("agi_callerid", "desconocido")
+        numero = agi_env.get("agi_callerid_number") or \
+         agi_env.get("agi_callerid") or \
+         "UNKNOWN"
         #control en caso no lleguen los audios, porque debe colgar la llamada
         if not audios_str:
             self.send_command('STREAM FILE invalid ""')
@@ -55,8 +59,9 @@ class FastAGIHandler(socketserver.StreamRequestHandler):
 
             #dentro de las opciones se maneja al vector, se lo maneja por sus posiciones para enviar al asterisk
             if digit == "1":
+                self.enviar_datos_a_socket(numero, "1", "1")
                 if audios[1]:
-                    #con streamfile le paso al asterisk el nombre y lo busque es su ruta de sonidos
+                    #con streamfile le paso al asterisk el nombre y lo busque en su ruta de sonidos
                     self.send_command(f'STREAM FILE {audios[1]} ""')
 
                 lines = self.send_command("WAIT FOR DIGIT 5000")
@@ -64,14 +69,18 @@ class FastAGIHandler(socketserver.StreamRequestHandler):
                 digit_sub = chr(int(digit_code)) if digit_code and digit_code.isdigit() else None
 
                 if digit_sub == "1" and audios[2]:
+                    self.enviar_datos_a_socket(numero, "1", "2")
                     self.send_command(f'STREAM FILE {audios[2]} ""')
                 elif digit_sub == "2" and audios[3]:
+                    self.enviar_datos_a_socket(numero, "1", "3")
                     self.send_command(f'STREAM FILE {audios[3]} ""')
                 else:
+                    self.enviar_datos_a_socket(numero, "1", "9")
                     if audios[9]:
                         self.send_command(f'STREAM FILE {audios[9]} ""')
 
             elif digit == "2":
+                self.enviar_datos_a_socket(numero, "1", "4")
                 if audios[4]:
                     self.send_command(f'STREAM FILE {audios[4]} ""')
 
@@ -80,10 +89,13 @@ class FastAGIHandler(socketserver.StreamRequestHandler):
                 digit_sub = chr(int(digit_code)) if digit_code and digit_code.isdigit() else None
 
                 if digit_sub == "1" and audios[5]:
+                    self.enviar_datos_a_socket(numero, "1", "5")
                     self.send_command(f'STREAM FILE {audios[5]} ""')
                 elif digit_sub == "2" and audios[6]:
+                    self.enviar_datos_a_socket(numero, "1", "6")
                     self.send_command(f'STREAM FILE {audios[6]} ""')
                 else:
+                    self.enviar_datos_a_socket(numero, "1", "9")
                     if audios[9]:
                         self.send_command(f'STREAM FILE {audios[9]} ""')
 
@@ -93,14 +105,17 @@ class FastAGIHandler(socketserver.StreamRequestHandler):
                     # Transferir la llamada a otra extensión
                     # Ejemplo: extensión 100 en contexto 'atencion', prioridad 1
                     self.send_command('EXEC Goto default,402,1')
+                    self.guardar_paso_extension(numero, "402","7")
                     return  # Importante: salir del handler para no continuar con lógica posterior
 
             elif digit == "4":
                 if audios[8]:
+                    self.enviar_datos_a_socket(numero, "1", "8")
                     self.send_command(f'STREAM FILE {audios[8]} ""')
                     
             else:
                 if audios[9]:
+                    self.enviar_datos_a_socket(numero, "1", "9")
                     self.send_command(f'STREAM FILE {audios[9]} ""')
 
         self.send_command("HANGUP")
@@ -136,6 +151,36 @@ class FastAGIHandler(socketserver.StreamRequestHandler):
                 result = line.split('=')[1].split()[0]
                 return result
         return None
+    
+    #funcion para llamar al script donde se guarda los datos en DB
+    def enviar_datos_a_socket(self,numero, opcion, posicion_vect):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect(('localhost', 6000))
+                payload = json.dumps({
+                    'numero': numero,
+                    'opcion': opcion,
+                    'posicion_vect': posicion_vect
+                })
+                s.sendall(payload.encode())
+                print(f"[Socket] Enviado: {payload}")
+        except Exception as e:
+            print(f"[ERROR al enviar por socket] {e}")
+    
+    #funcion para guarda cuando decide comunicarse con otra extension
+    def guardar_paso_extension(self, numero, extension, posicion_vect):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect(('localhost', 6000))
+                payload = json.dumps({
+                    'numero': numero,
+                    'extension': extension,
+                    'posicion_vect': posicion_vect
+                })
+                s.sendall(payload.encode())
+                print(f"[Socket] Enviado paso a extensión: {payload}")
+        except Exception as e:
+            print(f"[ERROR al enviar paso a extensión por socket] {e}")
 
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
