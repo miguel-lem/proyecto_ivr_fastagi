@@ -28,6 +28,8 @@ class Promociones(models.Model):
 class EstadosLlamada(models.Model):
 	numero = models.CharField(max_length=20)
 	estado = models.CharField(max_length=9)
+	tiempo_timbrado = models.CharField(max_length=10)
+	tiempo_llamada = models.CharField(max_length=10)
 	created_at = models.DateTimeField(auto_now_add=True)
 
 #tabla en la cual se guardara la interaccion de parte del cliente

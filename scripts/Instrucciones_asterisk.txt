@@ -70,14 +70,32 @@ password=pass402
 
 [default]
 
-exten => 401,1,Dial(PJSIP/401)
+;extension colocada para probar que funcione el fastagi dos
+exten => 9999,1,NoOp(Prueba directa de AGI)
+ same => n,Set(LLAMADA_DATA=PRUEBA|NOANSWER|0|0|${UNIQUEID})
+ same => n,AGI(agi://192.168.2.10:4574/conAgiestados?${LLAMADA_DATA})
+ same => n,Hangup()
+
+
+;exten => 401,1,Dial(PJSIP/401); <----esta parte fue la primera de uso antes de agregarle las funcionalidades de fastagi
+exten => 401,1,NoOp(Llamada a la extensión 401); <----esta parte es la misma ext pero con funcionalidades agregado
+ same => n,Set(NUM_MARCADO=401)
+ same => n,Dial(PJSIP/401,25,g) ; <--- el 25 indica el tiempo que quiero pueda timbrar
+ same => n,Hangup()
+
+exten => h,1,NoOp( llegada al hangup handler: ${EXTEN} )
+ same => n,Set(LLAMADA_DATA=${NUM_MARCADO}|${DIALSTATUS}|$[${DIALEDTIME} - ${ANSWEREDTIME}]|${ANSWEREDTIME}|${UNIQUEID})
+ same => n,AGI(agi://192.168.2.10:4574/conAgiestados?${LLAMADA_DATA})
+
+
 exten => 402,1,Dial(PJSIP/402)
 
 ;configuracion de extension que manejara el fastagi para interaccionivr
 exten => _21[0-9],1,Answer()
  same => n,Wait(1)
- same => n,AGI(agi://192.168.2.10:4573/09_conAgi)
+ same => n,AGI(agi://192.168.2.10:4573/conAgi)
  same => n,Hangup()
+
 
 #para consumirle la api y probr que los audios se pueden escuchar e interactuar se hace mediante cliente rest la utilizacion del siguiente json:
 
@@ -93,7 +111,7 @@ exten => _21[0-9],1,Answer()
 #el json esta diseñado en base a lo que la api admite como datos de entrada
 #el script fastagi funciona de manera independiente a proyecto django por lo cual es preferible acceder a la ruta por consola y ejecutar el script "python script.py"
 
-
+#en caso que el script fastagi no quiere conectarse, no olvidar comprobar si los puertos esta debloqueados
 
 
 
