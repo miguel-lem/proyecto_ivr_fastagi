@@ -1,0 +1,21 @@
+#Nota importante
+#Para comprender este proyecto, es necesario tener conocimiento de asterisk, python, django, sockets, 
+#hilos y multihilos, ami, cliente rest (postman o algun otro)
+1.- crear un entorno virtual
+2.- crear un proyecto django
+3.- configurar en asterisk un usuario ami
+4.- intalar librerias, estas no las numero aqui, dentro de los archivos se puede ver las importaciones
+5.- crear los scripts en una ruta diferente al proyecto
+6.- configurar el extensions.conf y el pjsip.conf en asterisk
+7.- activar los escripts por consola, este es necesario activar el principal ya que dentro de llama a los otros
+8.- utilizar un cliente rest para enviar la solicitud
+9.- para las pruebas con ext es necesario tener configurado en un softphone
+10.- en asterisk se deben dar permisos a las rutas para que el usuario pueda acceder (el usuario con el que se ingresa a la pc linux es lo mejor, no utilizar el root)
+11.- 
+
+
+
+
+
+
+

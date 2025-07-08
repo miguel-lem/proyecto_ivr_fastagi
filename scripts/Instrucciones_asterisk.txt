@@ -100,23 +100,23 @@ exten => _21[0-9],1,Answer()
 
 #2.-la segunda version esta pulida y corregida el error de no tener el control de tiempo que ha timbrado
 #con eso se puede conocer en caso que las llamadas hayan sido colgadas porque no quieren contestar
-exten => 401,1,NoOp(Llamada a la extensión 401)
- same => n,Set(NUM_MARCADO=401)
+exten => 401,1,NoOp(Llamada a la extensión 401);<---muestra en consola el inicio de llamada de la ext
+ same => n,Set(NUM_MARCADO=401);<--guardar el numero en una variable
  same => n,Set(TIME_INICIO=${EPOCH});<---el epoch permite controlar a nivel de sistema el momento que empieza
- same => n,Dial(PJSIP/401,25,g)
+ same => n,Dial(PJSIP/401,25,g);<---manejo del dial de respuesta, la g es el tiempo que quiero timbre maximo
  same => n,Set(TIME_FIN=${EPOCH});<---aqui controlo el siguiente tiempo y puedo con eso operar para saber el tiempo de timbrado
- same => n,Set(DIALEDTIME=$[${TIME_FIN} - ${TIME_INICIO}])
- same => n,Hangup()
+ same => n,Set(DIALEDTIME=$[${TIME_FIN} - ${TIME_INICIO}]);<--cargo en una variable la resta de los tiempos para el control
+ same => n,Hangup();<--es la sentencia para poder generar el colgado de la llamada
 
-exten => h,1,NoOp(--- Llegada al hangup handler ---)
- same => n,NoOp(DIALSTATUS=${DIALSTATUS})
+exten => h,1,NoOp(--- Llegada al hangup handler ---);<--indica que se entro al otro contexto en este caso al hungup que fue creado a proposito para el control
+ same => n,NoOp(DIALSTATUS=${DIALSTATUS});<---mostrar el estado final de la llamada y cual a sido el estatus
  same => n,NoOp(DIALEDTIME=${DIALEDTIME})
- same => n,Set(DIALEDTIME=${IF($[${ISNULL(${DIALEDTIME})}]?0:${DIALEDTIME})})
- same => n,Set(ANSWEREDTIME=${IF($[${ISNULL(${ANSWEREDTIME})}]?0:${ANSWEREDTIME})})
- same => n,Set(TIMBRADO=$[${DIALEDTIME} - ${ANSWEREDTIME}])
- same => n,Set(LLAMADA_DATA=${NUM_MARCADO}|${DIALSTATUS}|${TIMBRADO}|${ANSWEREDTIME}|${UNIQUEID})
+ same => n,Set(DIALEDTIME=${IF($[${ISNULL(${DIALEDTIME})}]?0:${DIALEDTIME})});<--asegura que DIALEDTIME tenga un valor numérico (0 si está vacío)
+ same => n,Set(ANSWEREDTIME=${IF($[${ISNULL(${ANSWEREDTIME})}]?0:${ANSWEREDTIME})});<--asegura que ANSWEREDTIME tenga un valor numérico (0 si está vacío)
+ same => n,Set(TIMBRADO=$[${DIALEDTIME} - ${ANSWEREDTIME}]);<--calcula el tiempo que la llamada estuvo timbrando antes de ser contestada, si no se contestó, TIMBRADO = DIALEDTIME
+ same => n,Set(LLAMADA_DATA=${NUM_MARCADO}|${DIALSTATUS}|${TIMBRADO}|${ANSWEREDTIME}|${UNIQUEID});<--construccio nde cadena para colocar todos los datos
  same => n,NoOp(LLAMADA_DATA=${LLAMADA_DATA})
- same => n,AGI(agi://192.168.2.10:4574/conAgiestados?${LLAMADA_DATA})
+ same => n,AGI(agi://192.168.2.10:4574/conAgiestados?${LLAMADA_DATA})<--llamo al agi y le paso las variables hacia el fastagi
 
 ;esta extension esta configurada para poder realizar pruebas
 exten => 402,1,Dial(PJSIP/402)
