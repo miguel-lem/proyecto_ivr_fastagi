@@ -1,6 +1,6 @@
 from django.db import models
 
-#tabla en la cual se guardan los mensjaes que seran la plantilla
+#tabla en la cual se guardan los mensajes que seran la plantilla
 class Mensajes(models.Model):
 	mensaje = models.TextField(max_length=300)
 	tipo_cartera = models.CharField(max_length=100)
@@ -14,7 +14,6 @@ class Cliente(models.Model):
 	cartera = models.CharField(max_length=60)
 	banco = models.CharField(max_length=80)
 	monto = models.CharField(max_length=10)
-	###monto = models.DecimalField(max_digits=12, decimal_places=2)
 	created_at = models.DateTimeField(auto_now_add=True)
 
 

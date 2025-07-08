@@ -1,5 +1,7 @@
 # archivo: guardar_estados_llamada.py
-
+#este script fue diseñado para poder guardar los registros de eventos que suceden
+#previos a que funcione el fastagi del ivr,
+#es decir este puede capturar cosas como si no se contesta
 import socket
 import json
 import psycopg2
@@ -8,7 +10,7 @@ from psycopg2 import sql
 import threading
 
 HOST = 'localhost'
-PORT = 6010  # 👈 Puerto separado del 6000 usado por el otro script
+PORT = 6010  # Puerto que se coloco, este evita chocarse con el del otro script que tambien guarda datos
 
 def guardar_estado_llamada(numero, estado, tiempo_timbrado, tiempo_llamada):
     try:

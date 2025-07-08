@@ -68,6 +68,8 @@ password=pass402
 
 #en el extensions.conf se configura las extensiones que se van a utilizar para las llamadas, aqui es importante el contexto, tambien aqui se agregan las extensiones que se utilizaran para que manejen el fastagi
 
+#1.-la primera version de configuracion permitio llamar y guardar los tiempos de timbrado y de llamada pero no 
+#funciona si por un caso timbra y cuelgan la llamada porque no quieren contestar
 [default]
 
 ;extension colocada para probar que funcione el fastagi dos
@@ -96,9 +98,42 @@ exten => _21[0-9],1,Answer()
  same => n,AGI(agi://192.168.2.10:4573/conAgi)
  same => n,Hangup()
 
+#2.-la segunda version esta pulida y corregida el error de no tener el control de tiempo que ha timbrado
+#con eso se puede conocer en caso que las llamadas hayan sido colgadas porque no quieren contestar
+exten => 401,1,NoOp(Llamada a la extensión 401)
+ same => n,Set(NUM_MARCADO=401)
+ same => n,Set(TIME_INICIO=${EPOCH});<---el epoch permite controlar a nivel de sistema el momento que empieza
+ same => n,Dial(PJSIP/401,25,g)
+ same => n,Set(TIME_FIN=${EPOCH});<---aqui controlo el siguiente tiempo y puedo con eso operar para saber el tiempo de timbrado
+ same => n,Set(DIALEDTIME=$[${TIME_FIN} - ${TIME_INICIO}])
+ same => n,Hangup()
+
+exten => h,1,NoOp(--- Llegada al hangup handler ---)
+ same => n,NoOp(DIALSTATUS=${DIALSTATUS})
+ same => n,NoOp(DIALEDTIME=${DIALEDTIME})
+ same => n,Set(DIALEDTIME=${IF($[${ISNULL(${DIALEDTIME})}]?0:${DIALEDTIME})})
+ same => n,Set(ANSWEREDTIME=${IF($[${ISNULL(${ANSWEREDTIME})}]?0:${ANSWEREDTIME})})
+ same => n,Set(TIMBRADO=$[${DIALEDTIME} - ${ANSWEREDTIME}])
+ same => n,Set(LLAMADA_DATA=${NUM_MARCADO}|${DIALSTATUS}|${TIMBRADO}|${ANSWEREDTIME}|${UNIQUEID})
+ same => n,NoOp(LLAMADA_DATA=${LLAMADA_DATA})
+ same => n,AGI(agi://192.168.2.10:4574/conAgiestados?${LLAMADA_DATA})
+
+;esta extension esta configurada para poder realizar pruebas
+exten => 402,1,Dial(PJSIP/402)
+
+;configuracion de extension que manejara el fastagi para interaccionivr
+exten => _21[0-9],1,Answer()
+ same => n,Wait(1)
+ same => n,AGI(agi://192.168.2.10:4573/conAgi)
+ same => n,Hangup()
+
+
+
+
 
 #para consumirle la api y probr que los audios se pueden escuchar e interactuar se hace mediante cliente rest la utilizacion del siguiente json:
 
+#1.- primera version, esta no permite que de lado de asterisk tenga un control total debido al AMI
 {
     "channel": "PJSIP/401",
     "exten": "210", 
@@ -108,10 +143,21 @@ exten => _21[0-9],1,Answer()
     "numero_celular":"0981111111"
 }
 
+#2.-esta es la otra parte en la cual se le indica que es una local para que se le pueda operar 
+#y la extencion hungup pueda trabajar y capturar los datos de inicio 
+{
+    "channel": "Local/401@default",
+    "exten": "210", 
+    "context": "default", 
+    "priority": 1, 
+    "callerid": "Mi llamada",
+    "numero_celular":"0981111117"
+}
+
 #el json esta diseñado en base a lo que la api admite como datos de entrada
 #el script fastagi funciona de manera independiente a proyecto django por lo cual es preferible acceder a la ruta por consola y ejecutar el script "python script.py"
 
-#en caso que el script fastagi no quiere conectarse, no olvidar comprobar si los puertos esta debloqueados
+#en caso que el script fastagi no quiere conectarse, no olvidar comprobar si los puertos estan debloqueados
 
 
 

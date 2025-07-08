@@ -120,6 +120,11 @@ class LlamadasView3(viewsets.ViewSet):
         #donde esta la funcion para generar la union de los textos y devolucion de los nombre es audios
         mediador = Mediador_texto_audio()
         lista_audios=mediador.generar_audios_llamada(numero_celular,"comprada")
+        #agrego este control en caso no exista el usuario, porque la secuencia colocada
+        #debe entregarme los resultados de valores no encontrados asignados como "0"
+        if lista_audios == 0:
+            #retorno esta respuesta y no ejecuto la llamada
+            return JsonResponse({'message': 'La llamada no se puede ejecutar, no existe el usuario'})
         #llamamos a la funcion de crear el audio y enviarlo a al servidor asteris
         #creo el objeto de crearaudio
         gestor_audio = CrearAudio()
@@ -394,6 +399,11 @@ class Mediador_texto_audio():
             #Captura de todos los mensajes de acuerdo al grupo
             #Utilizo la funcion que me genera el primer audio personalizado de acuerdo al usuario
             saludo = consulta.generar_saludo_personalizado(numero_celular)  # Audio 0
+            print("ANTES DEL PRIMER CONTROL CUANDO NO HAY USUARIO--------------////////-------")
+            #genero un control en caso no exista el usuario
+            if saludo == 'Error: Cliente no encontrado.':
+                #retorno el cero por ser mas facil para utilizar
+                return 0
             #creo el texto en base a los mensajes osbrantes de la cartera
             menu_principal = consulta.opcionesdesde1_error(cartera)         # Audios 1–2
             #creo los mensajes en razon de las promociones que se hayan cargado
@@ -458,7 +468,8 @@ class Consultas:
         try:
             # Obtener los datos del cliente
             cliente = Cliente.objects.get(numero_celular=numero_celular)
-
+            #control en caso no exista el usuario dentro de la DB
+            
             # Buscar el mensaje según el codigo de mensaje
             mensaje_base = Mensajes.objects.get(codigo='saludo-comprada')
 
@@ -473,6 +484,7 @@ class Consultas:
             return mensaje_final
 
         except Cliente.DoesNotExist:
+            #este retorno es importante porque se lo puede utilizar para continuar o no la llamada
             return "Error: Cliente no encontrado."
         except Mensajes.DoesNotExist:
             return "Error: No se encontró mensaje para esta cartera."
