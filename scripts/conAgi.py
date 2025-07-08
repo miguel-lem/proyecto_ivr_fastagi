@@ -75,9 +75,21 @@ class FastAGIHandler(socketserver.StreamRequestHandler):
                 if digit_sub == "1" and audios[2]:
                     self.enviar_datos_a_socket(numero, "1_1", "2")
                     self.send_command(f'STREAM FILE {audios[2]} ""')
+                    lines = self.send_command("WAIT FOR DIGIT 5000")
+                    digit_code = self.get_result_value(lines)
+                    print(f"[DEBUG] digit_code subinterno: {digit_code}") 
+                    digit_sub_in = chr(int(digit_code)) if digit_code and digit_code.isdigit() else None
+                    print(f"[DEBUG] digit_sub_in interno: {digit_sub_in}")
+                    if digit_sub_in=="1":
+                        self.send_command('EXEC Goto default,402,1')
+                        self.guardar_paso_extension(numero, "402","2")
+                        return 
                 elif digit_sub == "2" and audios[3]:
                     self.enviar_datos_a_socket(numero, "1_2", "3")
                     self.send_command(f'STREAM FILE {audios[3]} ""')
+                    self.send_command('EXEC Goto default,402,1')
+                    self.guardar_paso_extension(numero, "402","3")
+                    return 
                 else:
                     #el valor 99 y los que se relacionan con mas de dos 9 son porque presiono mal la opcion
                     self.enviar_datos_a_socket(numero, "99", "9")
@@ -96,9 +108,19 @@ class FastAGIHandler(socketserver.StreamRequestHandler):
                 if digit_sub == "1" and audios[5]:
                     self.enviar_datos_a_socket(numero, "2_1", "5")
                     self.send_command(f'STREAM FILE {audios[5]} ""')
+                    lines = self.send_command("WAIT FOR DIGIT 5000")
+                    digit_code = self.get_result_value(lines)
+                    digit_sub_in = chr(int(digit_code)) if digit_code and digit_code.isdigit() else None
+                    if digit_sub_in=="1":
+                        self.send_command('EXEC Goto default,402,1')
+                        self.guardar_paso_extension(numero, "402","5")
+                        return 
                 elif digit_sub == "2" and audios[6]:
                     self.enviar_datos_a_socket(numero, "2_2", "6")
                     self.send_command(f'STREAM FILE {audios[6]} ""')
+                    self.send_command('EXEC Goto default,402,1')
+                    self.guardar_paso_extension(numero, "402","6")
+                    return 
                 else:
                     self.enviar_datos_a_socket(numero, "999", "9")
                     if audios[9]:
@@ -110,7 +132,7 @@ class FastAGIHandler(socketserver.StreamRequestHandler):
                     self.enviar_datos_a_socket(numero, "3", "7")
                     self.send_command(f'STREAM FILE {audios[7]} ""')
                     # Transferir la llamada a otra extensión
-                    # Ejemplo: extensión 100 en contexto 'atencion', prioridad 1
+                    # Ejemplo: extensión 402 en contexto 'default', prioridad 1
                     self.send_command('EXEC Goto default,402,1')
                     self.guardar_paso_extension(numero, "402","7")
                     return  # Importante: salir del handler para no continuar con lógica posterior
