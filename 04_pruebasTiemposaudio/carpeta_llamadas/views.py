@@ -22,6 +22,10 @@ import uuid
 from pathlib import Path
 from paramiko import SSHClient, AutoAddPolicy
 import datetime
+import threading
+
+call_event_map = {}  # Mapea CALL_ID -> threading.Event
+call_result_map = {}  # Mapea CALL_ID -> resultado/causa
 
 # Variables que se utilizaran para la configuracion y enlace con AMI
 _HOST = '192.168.2.18'
@@ -71,14 +75,22 @@ class RealizarLllamada:
         return not self._kill_flag
 
     #funcion para realziar la llamada
-    def realizar_llamada(self, channel, exten,context, priority, callerid,lista_audios):
+    def realizar_llamada(self, channel, exten,context, priority, callerid,lista_audios,call_id=None):
+        #creo un id unico para tratar de controlar el flujo
+        if call_id is None:
+            call_id = str(uuid.uuid4())
+
+        # Creamos un evento que nos permitirá esperar hasta el Hangup
+        event = threading.Event()
+        call_event_map[call_id] = event
         # Crear la acción de origen para realizar una llamada 
         action = ami.core._Originate(
             channel=channel,
             timeout=30000,
             callerid=callerid,
             variables={
-                'AUDIOS': '|'.join(lista_audios)
+                'AUDIOS': '|'.join(lista_audios),
+                'CALL_ID': call_id
             },
         )
         #impresion para probar que pasen todos los nombres dentro del vector
@@ -91,14 +103,35 @@ class RealizarLllamada:
         response = self._manager.send_action(action)
         # Verificar respuesta completa (para depuración)
         print(response)
+        if not response.success:
+            return {'success': False, 'error': 'Error al lanzar llamada'}
 
-        # Ahora, si el audio ha sido reproducido, podemos colgar o continuar con más acciones
-        '''if response.success:
-            #creo un objeto de la clase donde escucho eventos
-            teclas=EscucharEventos()
-            #llamo a la funcion de escucha
-            teclas.obtener_teclas_asterisk("admin", "mi_contrasenia", "192.168.2.18")'''
-        return response
+        print(f"[INFO] Llamada lanzada, esperando fin para CALL_ID={call_id}...")
+         # Esperamos hasta que se dispare el evento desde el listener (máx 2 min)
+        event_occurred = event.wait(timeout=120)  # espera bloqueante
+
+        if event_occurred:
+            causa = call_result_map.pop(call_id, 'Desconocido')
+            print(f"[INFO] Llamada finalizada para {call_id}, causa: {causa}")
+            return {'success': True, 'call_id': call_id, 'cause': causa}
+        else:
+            print(f"[WARN] Timeout esperando fin de llamada para {call_id}")
+            return {'success': False, 'error': 'Timeout esperando fin de llamada'}
+
+        #return response, call_id
+    
+    def registrar_escuchas(self):
+        @self._manager.register_event('Hangup')
+        def handle_hangup(manager, event):
+            call_id = event.get('Variable_CALL_ID') or event.get('CALL_ID')
+            causa = event.get('Cause-txt')
+
+            print(f"[AMI] Llamada finalizada: CALL_ID={call_id}, Causa={causa}")
+
+            if call_id in call_event_map:
+                call_result_map[call_id] = causa
+                call_event_map[call_id].set()
+                del call_event_map[call_id]
 
 
 #esta clase es para poder extraer desde el front los datos, por el momento de la practica se esta utilizando 
@@ -110,6 +143,7 @@ class LlamadasView3(viewsets.ViewSet):
     def realizar_llamadaunica(self, request):
         # Extraer los parámetros de la solicitud
         channel = request.data.get('channel', '')
+        channel1 = 'Local/{}@default'.format(channel)
         exten = request.data.get('exten', '')
         context = request.data.get('context', '')
         priority = request.data.get('priority', 1)
@@ -137,13 +171,13 @@ class LlamadasView3(viewsets.ViewSet):
         # Iniciar la conexión AMI que esta en la clas donde creamos la funcion para realziar la llamada
         ami_core = RealizarLllamada()
         # Realizar la llamada, le pasamos los parametros
-        response = ami_core.realizar_llamada(channel, exten, context, priority, callerid,lista_audios)
-        ###return JsonResponse({'message': 'La funcion de llamada esta funcionando bien',
-        ###                     'consulta_generada':lista_audios})
-        if response.success:
+        response = ami_core.realizar_llamada(channel1, exten, context, priority, callerid,lista_audios)
+        
+        return JsonResponse(response, status=200 if response['success'] else 400)
+        '''if response.success:
             return JsonResponse({'message': 'La llamada fue exitosa'})
         else:
-            return JsonResponse({'message': 'Hubo un error al realizar la llamada'}, status=400)
+            return JsonResponse({'message': 'Hubo un error al realizar la llamada'}, status=400)'''
 
 
 #esta clase es para poder generar el audio, esta con ViewSet porque las primeras pruebas fueron realizadas

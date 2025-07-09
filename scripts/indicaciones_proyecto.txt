@@ -11,8 +11,9 @@
 8.- utilizar un cliente rest para enviar la solicitud
 9.- para las pruebas con ext es necesario tener configurado en un softphone
 10.- en asterisk se deben dar permisos a las rutas para que el usuario pueda acceder (el usuario con el que se ingresa a la pc linux es lo mejor, no utilizar el root)
-11.- 
-
+11.- en contenedor o como se desea se debe instalar y configurar la DB
+FASE 2
+12.- en un contenedor instalar rabbitmq, este sirve para poder tener un broker ya que celery lo va a utilizar
 
 
 

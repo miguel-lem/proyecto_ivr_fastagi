@@ -50,7 +50,7 @@ VALUES (
 #para tabla cliente
 INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
 VALUES (
-    '0981111111',
+    '401',
     'Juan Pérez',
     'comprada',
     'Banco Pichincha',
@@ -59,7 +59,7 @@ VALUES (
 );
 INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
 VALUES (
-    '0981111112',
+    '402',
     'Juana Velez',
     'comprada',
     'Banco Pichincha',
@@ -68,7 +68,7 @@ VALUES (
 );
 INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
 VALUES (
-    '0981111113',
+    '403',
     'Jubil Andragora',
     'comprada',
     'Banco Pacifico',
@@ -77,7 +77,7 @@ VALUES (
 );
 INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
 VALUES (
-    '0981111114',
+    '404',
     'Cartil Marid',
     'comprada',
     'Banco Pacifico',
@@ -86,7 +86,7 @@ VALUES (
 );
 INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
 VALUES (
-    '0981111115',
+    '405',
     'Alistar Torbellino',
     'comprada',
     'Banco Pacifico',
@@ -95,7 +95,7 @@ VALUES (
 );
 INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
 VALUES (
-    '0981111116',
+    '406',
     'Dersin Plaudi',
     'comprada',
     'Banco Pacifico',
@@ -104,7 +104,7 @@ VALUES (
 );
 INSERT INTO carpeta_llamadas_cliente (numero_celular, nombre, cartera, banco, monto, created_at)
 VALUES (
-    '0981111117',
+    '407',
     'Juana la Alpaca',
     'comprada',
     'Banco Pacifico',
@@ -128,4 +128,56 @@ VALUES (
     CURRENT_TIMESTAMP
 );
 
+###########################################################################################################
+#extensiones para llamada
+INSERT INTO carpeta_llamadas_extensiones (extension,created_at)
+VALUES (
+    '210',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_extensiones (extension,created_at)
+VALUES (
+    '211',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_extensiones (extension,created_at)
+VALUES (
+    '212',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_extensiones (extension,created_at)
+VALUES (
+    '213',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_extensiones (extension,created_at)
+VALUES (
+    '214',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_extensiones (extension,created_at)
+VALUES (
+    '215',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_extensiones (extension,created_at)
+VALUES (
+    '216',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_extensiones (extension,created_at)
+VALUES (
+    '217',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_extensiones (extension,created_at)
+VALUES (
+    '218',
+    CURRENT_TIMESTAMP
+);
+INSERT INTO carpeta_llamadas_extensiones (extension,created_at)
+VALUES (
+    '219',
+    CURRENT_TIMESTAMP
+);
 

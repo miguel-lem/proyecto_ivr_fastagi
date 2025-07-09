@@ -23,6 +23,11 @@ class Promociones(models.Model):
 	codigo = models.CharField(max_length=70)
 	created_at = models.DateTimeField(auto_now_add=True)
 
+#tabla para controlar las extensiones disponibles
+class Extensiones(models.Model):
+	extension = models.CharField(max_length=20)
+	created_at = models.DateTimeField(auto_now_add=True)
+
 #tabla en la cual se colocarna los estados de llamadas como: respondio, colgo, buzon, ocupado
 class EstadosLlamada(models.Model):
 	numero = models.CharField(max_length=20)

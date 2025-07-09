@@ -23,7 +23,6 @@ class FastAGIHandler(socketserver.StreamRequestHandler):
         #capturo los datos que vienen de lado del ami en el canal de llamada
         audios_str = self.get_variable("AUDIOS")
         #captura del numero que se va conectar
-        #numero = agi_env.get("agi_callerid", "desconocido")
         numero = agi_env.get("agi_callerid_number") or \
          agi_env.get("agi_callerid") or \
          "UNKNOWN"
