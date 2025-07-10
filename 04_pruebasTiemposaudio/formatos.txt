@@ -4,7 +4,7 @@
 #para tabla mensajes
 INSERT INTO carpeta_llamadas_mensajes (mensaje, tipo_cartera, codigo, created_at)
 VALUES (
-    'Estimado cliente {nombre_cliente}, en representación de {banco}, el ESTUDIO JURIDICO ROMERO D Y ASOCIADOS le recuerda que mantiene su crédito vencido con un saldo de ${monto}, por este motivo, queremos brindarle diferentes opciones de pago. Digite 1 para recibir información de pago de contado, digite 2 para información de un convenio, presiones 3 si desea hablar con un agente, presione 4 si no está disponible este momento',
+    'Estimado cliente {nombre_cliente}, en representación de {banco}, el ESTUDIO JURIDICO ROMERO D Y ASOCIADOS le recuerda que mantiene su crédito vencido con un saldo de ${monto}, por este motivo, queremos brindarle diferentes opciones de pago. Digite 1 para recibir información de pago de contado, digite 2 para información de un convenio, digite 3 si desea hablar con un agente, digite 4 si no está disponible este momento',
     'comprada',
     'saludo-comprada',
     CURRENT_TIMESTAMP

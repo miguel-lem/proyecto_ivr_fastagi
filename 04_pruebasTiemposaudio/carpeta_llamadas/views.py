@@ -9,10 +9,7 @@ from .models import Cliente, Mensajes, Promociones
 # views.py
 import time
 from django.http import JsonResponse
-from rest_framework import viewsets
 from pystrix import ami
-import socket
-import json
 from rest_framework.viewsets import ViewSet
 import pyttsx3
 from django.http import FileResponse, JsonResponse
@@ -77,20 +74,28 @@ class RealizarLllamada:
     #funcion para realziar la llamada
     def realizar_llamada(self, channel, exten,context, priority, callerid,lista_audios,call_id=None):
         #creo un id unico para tratar de controlar el flujo
+        #esto lo adjunto al nombre de la llamada
         if call_id is None:
             call_id = str(uuid.uuid4())
 
-        # Creamos un evento que nos permitirá esperar hasta el Hangup
+        #unificasion del nombre de llamada con el id
+        callerid_custom = f"{callerid}-{call_id}"
+        #impresiones para probar qeu se ha fucionado las dos variables
+        print("ESTO SE A LOGRADO IMPRIMIR-----------------")
+        print(callerid_custom)
+        # Creamos un evento que nos permitirá esperar hasta el Hangup, este es un hilo
         event = threading.Event()
-        call_event_map[call_id] = event
+        #a la funcion le paso el id de lamada generada, si el evento le devuelve uno igual entonces lo despierta 
+        #y cierra la comunicacion con una respuesta
+        call_event_map[callerid_custom] = event
         # Crear la acción de origen para realizar una llamada 
         action = ami.core._Originate(
             channel=channel,
             timeout=30000,
-            callerid=callerid,
+            callerid=callerid_custom,
             variables={
-                'AUDIOS': '|'.join(lista_audios),
-                'CALL_ID': call_id
+                #le paso la lista de los nombres de audios separados por tuberia
+                'AUDIOS': '|'.join(lista_audios)
             },
         )
         #impresion para probar que pasen todos los nombres dentro del vector
@@ -103,36 +108,66 @@ class RealizarLllamada:
         response = self._manager.send_action(action)
         # Verificar respuesta completa (para depuración)
         print(response)
+        #respuesta en caso no se logre efectuar la llamada
         if not response.success:
             return {'success': False, 'error': 'Error al lanzar llamada'}
 
-        print(f"[INFO] Llamada lanzada, esperando fin para CALL_ID={call_id}...")
-         # Esperamos hasta que se dispare el evento desde el listener (máx 2 min)
-        event_occurred = event.wait(timeout=120)  # espera bloqueante
+        print(f"[INFO] Llamada lanzada, esperando fin para CALL_ID={callerid_custom}...")
 
-        if event_occurred:
-            causa = call_result_map.pop(call_id, 'Desconocido')
-            print(f"[INFO] Llamada finalizada para {call_id}, causa: {causa}")
-            return {'success': True, 'call_id': call_id, 'cause': causa}
+        # Esperamos hasta que se dispare el evento desde el listener (máx 65 segundos)
+        #eso en caso no responda el asterisk, es decir, al hilo lo hace dormir esperando el hungup
+        #se convierte en verdadero si alguien lo activa dentro del tiempo
+        #sera falso si nadie lo activo en su tiempo de espera
+        waited = event.wait(timeout=65)
+        if waited:
+            #al activarse el evento saca del vector en base al id la causa que devuelva
+            #si no lo agrega desconocido
+            cause = call_result_map.pop(callerid_custom, 'Desconocido')
+            #retorna el id de la llamada y la causa
+            return {'success': True, 'call_id': callerid_custom, 'cause': cause}
         else:
-            print(f"[WARN] Timeout esperando fin de llamada para {call_id}")
             return {'success': False, 'error': 'Timeout esperando fin de llamada'}
 
-        #return response, call_id
-    
+    #funcion para escuchar cuando se cuelga la llamada
     def registrar_escuchas(self):
-        @self._manager.register_event('Hangup')
-        def handle_hangup(manager, event):
-            call_id = event.get('Variable_CALL_ID') or event.get('CALL_ID')
-            causa = event.get('Cause-txt')
+        #le paso los eventos para poder extrerlos internamente
+        def mi_callback(event, manager):
+            if event.name == 'Hangup':
+                #imprmir todo el evento para conocer lo que me devuelve asterisk
+                print("[DEBUG] Evento completo Hangup:", event)
 
-            print(f"[AMI] Llamada finalizada: CALL_ID={call_id}, Causa={causa}")
+                #intenta obtener el identificador, en realidad es el ultimo porque ese
+                #lo estoy controlando desde lado del asterisk
+                callerid_custom = (
+                    event.get('Variable_CALL_ID') or
+                    event.get('CALL_ID') or
+                    event.get('CALL-ID') or 
+                    event.get('CallerIDName')#<--este lo controlo de lado del asterisk
+                )
 
-            if call_id in call_event_map:
-                call_result_map[call_id] = causa
-                call_event_map[call_id].set()
-                del call_event_map[call_id]
+                #dentro del evento busca "Cause-text" que es el nombre de la variable que envia asterisk
+                #tambien se el agrega "Cause" en caso sea el nombre, pero para mayor seguridad se vigila el nombre
+                #en los eventos que retorna asterisk
+                causa = event.get('Cause-txt') or event.get('Cause')
+                #genero una impresion de los resultados
+                print(f"[AMI] Hangup: CALL_ID={callerid_custom}, cause={causa}")
 
+                #verifica si existe un evento registrado con ese nombre "el id"
+                #dentro del call_event_map y si existe indica que alguien esta espeando en el wait
+                if callerid_custom in call_event_map:
+                    #guarda la causa de la llamada al colgar
+                    call_result_map[callerid_custom] = causa
+                    #activar el hilo de espera y desbloquea para que continue
+                    call_event_map[callerid_custom].set()
+                    #aliminar el evento del diccionario para evitar llenarlo con cosas innecesarias
+                    del call_event_map[callerid_custom]
+
+        #se ejecuta la peticion para que la funcion de registro de llamada se active
+        #cuando de lado del ami se recibe una accion de hungup
+        self._manager.register_callback('Hangup', mi_callback)
+
+
+    
 
 #esta clase es para poder extraer desde el front los datos, por el momento de la practica se esta utilizando 
 #un cliente api rest Postman
@@ -170,6 +205,7 @@ class LlamadasView3(viewsets.ViewSet):
         print("---------------------------paso de la extraccion de nombre---------------")
         # Iniciar la conexión AMI que esta en la clas donde creamos la funcion para realziar la llamada
         ami_core = RealizarLllamada()
+        ami_core.registrar_escuchas()#aqui se coloca los escuchas para saber si algo pasa
         # Realizar la llamada, le pasamos los parametros
         response = ami_core.realizar_llamada(channel1, exten, context, priority, callerid,lista_audios)
         
