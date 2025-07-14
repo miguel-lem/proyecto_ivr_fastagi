@@ -9,7 +9,7 @@ from datetime import datetime
 from psycopg2 import sql
 import threading
 
-HOST = 'localhost'
+HOST = 'localhost'  #aqui va la ip de la pc en caso de que este fuera del proyecto
 PORT = 6010  # Puerto que se coloco, este evita chocarse con el del otro script que tambien guarda datos
 
 def guardar_estado_llamada(numero, estado, tiempo_timbrado, tiempo_llamada):
